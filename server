@@ -1,0 +1,41 @@
+#!/usr/bin/env node
+var http = require('http');
+var net = require('net');
+
+var s = http.createServer(function(req, res) {
+  console.log('HTTP URL:'+req.url);
+  var tunnel_params = JSON.parse((new Buffer(req.url.split('/')[1], 'base64')).toString());
+  console.log('Someone connected. They want '+tunnel_params.address+' on port '+tunnel_params.port);
+  var socket = net.connect({port: tunnel_params.port, host: tunnel_params.address}, function() {
+    console.log('connected');
+    res.writeHead(200);
+    res.write('');
+  });
+  socket.on('data', function(d) {
+    console.log('received from world::'+d);
+    res.write(d);
+  });
+  req.on('data', function(d) {
+    console.log('received from tunnel::'+d);
+    socket.write(d);
+  });
+  socket.on('end', function() {
+    console.log('The connection closed (end)')
+  });
+  req.on('end', function() {
+    console.log('finished receiving.');
+  });
+  socket.on('close', function() {
+    console.log('The connection closed (close)');
+    res.end();
+  });
+  req.on('close', function() {
+    console.log('The tunnel closed');
+    socket.end();
+  });
+  
+});
+
+s.listen(3001);
+
+// vim: set filetype=javascript syntax=javascript :
