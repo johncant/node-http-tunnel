@@ -2,80 +2,33 @@
 var net = require('net');
 var socks = require('node-socks/socks.js');
 var http = require('http');
+var request = require('request');
 
+var tunnel_address;
 
 if (!process.argv[2]) {
   console.log('Usage: ./client TUNNEL_ADDRESS # TUNNEL ADDRESS is the address of the tunnelling server');
   return 0;
+} else {
+  tunnel_address = process.argv[2]
 }
 
 // Create SOCKS server
 // The server accepts SOCKS connections. This particular server acts as a proxy.
 var HOST='127.0.0.1',
-    PORT='8888',
-    server = socks.createServer(function(socket, port, address, proxy_ready) {
-      // Received a connection.
-      var tunnel_params = {address: address, port: port};
-      var pretend_url = '/'+(new Buffer(JSON.stringify(tunnel_params))).toString('base64');
-      console.log('Establishing http tunnel through '+process.argv[2]+':3001 to '+tunnel_params.address+' on port '+port);
-      console.log('Encoding the host and port as '+pretend_url);
-      var proxy = http.request({
-          port: 3001,
-          host: process.argv[2],
-          method: 'POST',
-          path: pretend_url,
-        });
-      proxy.on('socket', function() {
-        proxy_ready();
-        console.log('Tunnel ready');
-      });
-      proxy.on('connection', function(res) {
-          console.log('The tunnel headers should have been sent')
-          res.on('data', function(d) {
-            //try {
-              console.log('Receiving '+d.length+' bytes from the tunnel');
-              socket.write(d);
-            //} catch(err) {
-            //}
-          });
-          res.on('end', function() {
-            console.log('The response ended');
-          });
-          res.on('close', function() {
-            socket.end();
-            console.error('The proxy closed');
-          });
-        });
-      socket.on('data', function(d) {
-        // If the application tries to send data before the proxy is ready, then that is it's own problem.
-        try {
-          console.log('Sending '+d.length+' bytes to the tunnel');
-          proxy.write(d);
-        } catch(err) {
-        }
-      });
-      socket.on('close', function(had_error) {
-        if (this.proxy !== undefined) {
-          proxy.removeAllListeners('data');
-          proxy.end();
-        }
-        console.error('The application closed');
-      }.bind(this));
+    PORT='8888'
 
-      proxy.write('');
-    });
+var server = socks.createServer(function(socket, port, address, proxy_ready) {
 
-server.on('error', function (e) {
-    console.error('SERVER ERROR: %j', e);
-    if (e.code == 'EADDRINUSE') {
-        console.log('Address in use, retrying in 10 seconds...');
-        setTimeout(function () {
-            console.log('Reconnecting to %s:%s', HOST, PORT);
-            server.close();
-            server.listen(PORT, HOST);
-        }, 10000);
-    }
+  // Received a connection.
+  var target_params = {address: address, port: port};
+  var pretend_url = 'http://'+tunnel_address+':3001/'+(new Buffer(JSON.stringify(target_params))).toString('base64');
+  console.log('Making a post to '+pretend_url);
+  socket.pipe(request.post(pretend_url)).pipe(socket);
+  proxy_ready(); // TODO - delay until the proxy is actually ready
 });
+
+
 server.listen(PORT, HOST);
 
 // vim: set filetype=javascript syntax=javascript :

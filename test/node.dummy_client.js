@@ -2,7 +2,7 @@ var socks = require('node-socks/socks.js');
 var http = require('http');
 
 console.log('Establishing connection to localhost');
-var tunnel_params = {address: 'www.google.com', port: 80};
+var tunnel_params = {address: 'localhost', port: 80};
 var request = http.request({
     port: 3001,
     method: 'POST',
