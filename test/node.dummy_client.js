@@ -1,10 +1,12 @@
 var socks = require('node-socks/socks.js');
 var http = require('http');
 
-console.log('Establishing connection to localhost');//+process.argv[2]);
+console.log('Establishing connection to localhost');
+var tunnel_params = {address: 'www.google.com', port: 80};
 var request = http.request({
     port: 3001,
     method: 'POST',
+    path: '/'+(new Buffer(JSON.stringify(tunnel_params))).toString('base64')
   }, function(res) {
     res.on('data', function(d) {
       console.log('receiving data::'+d);
@@ -17,5 +19,5 @@ var request = http.request({
     });
   }
 );
-request.write('Testing the HTTP tunnel. (1) This should have come out the other end. Bla bla bla bla bla bla bla bla bla bla bla bla');
+request.write('Testing the HTTP tunnel. (1) This should have come out the other end. Bla bla bla bla bla bla bla bla bla bla bla bla'+'Testing the HTTP tunnel. (1) This should have come out the other end. Bla bla bla bla bla bla bla bla bla bla bla bla'+'Testing the HTTP tunnel. (1) This should have come out the other end. Bla bla bla bla bla bla bla bla bla bla bla bla'+'Testing the HTTP tunnel. (1) This should have come out the other end. Bla bla bla bla bla bla bla bla bla bla bla bla'+'Testing the HTTP tunnel. (1) This should have come out the other end. Bla bla bla bla bla bla bla bla bla bla bla bla'+'Testing the HTTP tunnel. (1) This should have come out the other end. Bla bla bla bla bla bla bla bla bla bla bla bla'+'Testing the HTTP tunnel. (1) This should have come out the other end. Bla bla bla bla bla bla bla bla bla bla bla bla'+'Testing the HTTP tunnel. (1) This should have come out the other end. Bla bla bla bla bla bla bla bla bla bla bla bla');
 request.write('Testing the HTTP tunnel. (2) This should have come out the other end. Bla bla bla bla bla bla bla bla bla bla bla bla');
