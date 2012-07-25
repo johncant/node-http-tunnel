@@ -34,6 +34,6 @@ var s = http.createServer(function(req, res) {
   }
 });
 
-s.listen(3001);
+s.listen(tunnel_port);
 
 // vim: set filetype=javascript syntax=javascript :
