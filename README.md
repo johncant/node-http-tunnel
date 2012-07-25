@@ -12,7 +12,19 @@ Forward ports over the HTTP tunnel
 </h3>
 Use an SSH tunnel over the HTTP tunnel
 <h3>
-How will it work?
+How to use
 </h3>
-By keeping a persistent HTTP connection, and wrapping the data packets in compact JSON. From the outside world, it will look like a very long, slow download.
+<code>
+# On server outside the firewall
+./server &
+disown
+exit
 
+# On your machine inside the firewall
+./client # This sets up a SOCKS5 server on your local machine
+
+# Use with SSH
+ssh <your normal options> -o ProxyCommand "./ssh-connect <address of tunnelling server> %h %p"
+
+# pwnt.
+</code>
