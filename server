@@ -1,16 +1,38 @@
 #!/usr/bin/env node
 var http = require('http');
 var net = require('net');
+var strs = require('stringstream');
+var b64 = require('./lib/base64stream');
+
+var tunnel_port;
+
+if (process.argv[2] == 'development') {
+  tunnel_port = 3001;
+} else {
+  tunnel_port = 80;
+}
+
+
 
 var s = http.createServer(function(req, res) {
-  console.log('HTTP URL:'+req.url);
-  var tunnel_params = JSON.parse((new Buffer(req.url.split('/')[1], 'base64')).toString());
-  console.log('Someone connected. They want '+tunnel_params.address+' on port '+tunnel_params.port);
-  var socket = net.connect({port: tunnel_params.port, host: tunnel_params.address}, function() {
-    console.log('made the connection');
-  });
-  res.writeHead(200);
-  req.pipe(socket).pipe(res);
+  try {
+
+    // Get the requested host and port from the request header
+    console.log('HTTP URL:'+req.url);
+    var tunnel_params = JSON.parse((new Buffer(req.url.split('/')[1], 'base64')).toString());
+    console.log('Someone connected. They want '+tunnel_params.address+' on port '+tunnel_params.port);
+    var socket = net.connect({port: tunnel_params.port, host: tunnel_params.address}, function() {
+      console.log('made the connection');
+    });
+
+    // Send the response headers
+    res.writeHead(200);
+
+    // Pipe the data
+    req.pipe(new b64.Decoder()).pipe(socket).pipe(new b64.Encoder()).pipe(res);
+  } catch(err) {
+    console.log(err);
+  }
 });
 
 s.listen(3001);

@@ -2,8 +2,9 @@ var socks = require('node-socks/socks.js');
 var http = require('http');
 
 console.log('Establishing connection to localhost');
-var tunnel_params = {address: 'localhost', port: 80};
+var tunnel_params = {address: 'www.behiring.com', port: 80};
 var request = http.request({
+    host: 'ec2-176-34-215-115.eu-west-1.compute.amazonaws.com',
     port: 3001,
     method: 'POST',
     path: '/'+(new Buffer(JSON.stringify(tunnel_params))).toString('base64')
