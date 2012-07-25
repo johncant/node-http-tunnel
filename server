@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 var http = require('http');
 var net = require('net');
-var strs = require('stringstream');
 var b64 = require('./lib/base64stream');
 
 var tunnel_port;
