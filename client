@@ -2,8 +2,8 @@
 var net = require('net');
 var socks = require('node-socks/socks.js');
 var http = require('http');
-var request = require('request');
 var b64 = require('./lib/base64stream');
+var tunnel = require('./lib/request_tunnel.js')
 
 var tunnel_address, tunnel_port;
 
@@ -25,28 +25,27 @@ if (process.argv[3] == 'development') {
 var HOST='127.0.0.1',
     PORT='8888'
 
-var server = socks.createServer(function(socket, port, address, proxy_ready) {
-  try {
+var client = tunnel.createPersistentClient(tunnel_address, tunnel_port, function() {
+  console.log('Client created');
+});
+
+var socks_server = socks.createServer(function(socket, port, address, proxy_ready) {
+//  try {
     // Received a connection.
-    var target_params = {address: address, port: port};
-    var pretend_url = 'http://'+tunnel_address+':'+tunnel_port+'/'+(new Buffer(JSON.stringify(target_params))).toString('base64');
-    console.log('Making a post to '+pretend_url);
 
-    // Send the tunnel headers
-    remote = request.put(pretend_url)
-    remote.write(' '); // request makes the request when the first data is sent! ' ' in base64 is nothing.
-
+    // Make a connection through the tunnel
+    var conn = client.TCPConnection({host: address, port: port});
     // Now pipe the data
-    process.stdin.pipe(new b64.Encoder()).pipe(remote).pipe(new b64.Decoder()).pipe(process.stdout);
+    socket.pipe(conn).pipe(socket);
 
     proxy_ready(); // TODO - delay until the proxy is actually ready
-  } catch(err) {
-    console.log(err);
-  }
+//  } catch(err) {
+//    console.log(err);
+//  }
 });
 
 
-server.listen(PORT, HOST);
+socks_server.listen(PORT, HOST);
 
 // vim: set filetype=javascript syntax=javascript :
 

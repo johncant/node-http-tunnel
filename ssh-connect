@@ -4,6 +4,7 @@ var socks = require('node-socks/socks.js');
 var http = require('http');
 var request = require('request');
 var b64 = require('./lib/base64stream');
+var tunnel = require('./lib/request_tunnel');
 
 var tunnel_address, tunnel_port;
 
@@ -20,17 +21,25 @@ if (process.argv[5] == 'development') {
   tunnel_port = 80;
 }
 
+var target_params = {host: process.argv[3], port: process.argv[4]};
 
-var target_params = {address: process.argv[3], port: process.argv[4]};
-var pretend_url = 'http://'+tunnel_address+':'+tunnel_port+'/'+(new Buffer(JSON.stringify(target_params))).toString('base64');
+var client = tunnel.createPersistentClient(tunnel_address, tunnel_port, function() {
+  console.log('tunnel ready')
+  process.stdin.resume(); // ?
 
-process.stdin.resume(); // ?
+  // Make a connection through the tunnel
+  var conn = client.TCPConnection(target_params, function() {
 
-remote = request.put(pretend_url)
-remote.write(' '); // request makes the request when the first data is sent! ' ' in base64 is nothing.
+    // Now pipe the data
+    process.stdin.pipe(conn).pipe(process.stdout);
+    conn.on('end', function() {
+//      client.destroy();
+//      process.exit(0);
+    });
 
-process.stdin.pipe(new b64.Encoder()).pipe(remote).pipe(new b64.Decoder()).pipe(process.stdout);
+  });
 
+});
 
 // vim: set filetype=javascript syntax=javascript :
 
