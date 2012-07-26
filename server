@@ -13,7 +13,7 @@ if (process.argv[2] == 'development') {
 }
 
 var s = tunnel.createServer(function() {
-  console.log('Someone connected!');
+  //console.log('Someone connected!');
 });
 
 s.listen(tunnel_port);

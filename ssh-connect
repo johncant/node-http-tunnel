@@ -24,7 +24,6 @@ if (process.argv[5] == 'development') {
 var target_params = {host: process.argv[3], port: process.argv[4]};
 
 var client = tunnel.createPersistentClient(tunnel_address, tunnel_port, function() {
-  console.log('tunnel ready')
   process.stdin.resume(); // ?
 
   // Make a connection through the tunnel
