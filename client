@@ -30,20 +30,21 @@ var client = tunnel.createPersistentClient(tunnel_address, tunnel_port, function
 });
 
 var socks_server = socks.createServer(function(socket, port, address, proxy_ready) {
-//  try {
+  try {
 
     // Received a connection.
     console.log('Received a connection');
 
     // Make a connection through the tunnel
-    var conn = client.TCPConnection({host: address, port: port});
-    // Now pipe the data
-    socket.pipe(conn).pipe(socket);
+    var conn = client.TCPConnection({host: address, port: port}, function () {
+      // Now pipe the data
+      socket.pipe(conn).pipe(socket);
 
-    proxy_ready(); // TODO - delay until the proxy is actually ready
-//  } catch(err) {
-//    console.log(err);
-//  }
+      proxy_ready(); // TODO - delay until the proxy is actually ready
+    });
+  } catch(err) {
+    console.log(err);
+  }
 });
 
 
