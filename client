@@ -36,7 +36,7 @@ var socks_server = socks.createServer(function(socket, port, address, proxy_read
     console.log('Received a connection');
 
     // Make a connection through the tunnel
-    var conn = client.TCPConnection({host: address, port: port}, function () {
+    var conn = client.TCPConnection({host: address, port: port}, function (conn) {
       // Now pipe the data
       socket.pipe(conn).pipe(socket);
 

@@ -18,4 +18,3 @@ var s = tunnel.createServer(function() {
 
 s.listen(tunnel_port);
 
-// vim: set filetype=javascript syntax=javascript :
