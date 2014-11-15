@@ -27,7 +27,7 @@ var client = tunnel.createPersistentClient(tunnel_address, tunnel_port, function
   process.stdin.resume(); // ?
 
   // Make a connection through the tunnel
-  var conn = client.TCPConnection(target_params, function() {
+  client.TCPConnection(target_params, function(conn) {
 
     // Now pipe the data
     process.stdin.pipe(conn).pipe(process.stdout);
